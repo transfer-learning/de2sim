@@ -1,5 +1,7 @@
 import pygame
 import numpy as np
+import math
+
 
 class Visualizer:
     def __init__(self):
@@ -84,6 +86,26 @@ class Visualizer:
                            rscreen_coords, 5)
 
         for ping in ping_coords:
+            ping_pos = self.to_screen_coords(ping)
+            robot_screen_coords = self.to_screen_coords(robot_coords[:, 0])
+
+            dx = ping[0] - robot_coords[0, 0]
+            dy = ping[1] - robot_coords[1, 0]
+
+            line_angle = math.atan2(dy, dx)
+
+            dy = ping_pos[0] - robot_screen_coords[0]
+            dx = ping_pos[1] - robot_screen_coords[1]
+
+            line_length = math.hypot(dx, dy)
+
+            start_angle = line_angle - 10 * np.pi / 180
+            end_angle = line_angle + 10 * np.pi / 180
+
+            rect = pygame.Rect(robot_screen_coords[0] - line_length, robot_screen_coords[1] - line_length,
+                               line_length * 2, line_length * 2)
+            # pygame.draw.rect(self.display, (255, 255, 255), rect, 1)
+            pygame.draw.arc(self.display, (255, 255, 255), rect, start_angle, end_angle)
             pygame.draw.aaline(self.display, (255, 255, 255),
                                rscreen_coords, self.to_screen_coords(ping), 10)
 

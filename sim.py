@@ -3,6 +3,9 @@ import numpy as np
 import random
 import vis
 
+from de2bot import DE2Bot
+
+
 def meas_prob(x, o, meas_angle):
     ddir = o - x[:2, :]
     dist = np.linalg.norm(ddir)
@@ -15,6 +18,7 @@ def meas_prob(x, o, meas_angle):
     cos = np.arccos(cos_th)
     return np.exp(-15 * dist * cos[0, 0] * cos[0, 0])
 
+
 def sensor_model(x, obstacles, meas_angle):
     by_prox = sorted(obstacles, key=lambda o: np.linalg.norm(x[:2, :] - o))
 
@@ -24,13 +28,10 @@ def sensor_model(x, obstacles, meas_angle):
             return np.linalg.norm(obs - x[:2, 0])
     return None
 
-print(sensor_model(np.asmatrix([[0, 0, 6.6]]).T, [np.asmatrix([[1, 0]]).T], 2.5))
 
 def main():
     clock = pygame.time.Clock()
 
-    pos = np.asmatrix([0., 0, 0]).T
-    vel = np.asmatrix([0, 0.]).T
     visualizer = vis.Visualizer()
 
     fps = 60
@@ -38,11 +39,7 @@ def main():
     t = 0.0
     i = 0
 
-    r = 0.15
-    G = np.asmatrix([
-        [1.0, 1.0],
-        [1 / r, -1 / r]
-    ])
+    robot = DE2Bot()
 
     obstacles = [
         np.asmatrix([[0.5, 0]]).T,
@@ -57,6 +54,8 @@ def main():
         angles_deg = [-144, -90, -44, -12, 12, 44, 90, 144]
         angles_rad = [np.deg2rad(a) for a in angles_deg]
 
+        pos = robot.state.pose
+
         hits = []
         for a in angles_rad:
             dist = sensor_model(pos, obstacles, a)
@@ -65,14 +64,12 @@ def main():
                 hits.append((pos[0, 0] + dist * np.cos(angle), pos[1, 0] + dist * np.sin(angle)))
 
         u = np.asmatrix([1.0, 2.0]).T
+        robot.apply(u, dt)
 
-        f = 0.1 * G * u - vel
-        pos += dt * np.asmatrix([[vel[0, 0] * np.cos(pos[2, 0]), vel[0, 0] * np.sin(pos[2, 0]), vel[1, 0]]]).T
-        vel += dt * f
-
-        visualizer.draw(pos, pos, hits, [(mat[0, 0], mat[1, 0]) for mat in obstacles])
+        visualizer.draw(robot.state.pose, robot.state.pose, hits, [(mat[0, 0], mat[1, 0]) for mat in obstacles])
 
         clock.tick(60)
+
 
 if __name__ == '__main__':
     main()
