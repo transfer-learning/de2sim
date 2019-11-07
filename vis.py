@@ -61,7 +61,7 @@ class Visualizer:
             r[2, 0] = -arate_max
         return r
 
-    def draw(self, robot_coords, goal_point, ping_coords, obs_coords):
+    def draw(self, robot_coords, estimation, ping_coords, obs_coords):
         screen_coords = self.to_screen_coords(robot_coords)
         heading = robot_coords[2]
         line_end_coords = (
@@ -75,15 +75,15 @@ class Visualizer:
         pygame.draw.aaline(self.display, (255, 255, 255),
                            screen_coords, line_end_coords, 10)
 
-        rscreen_coords = self.to_screen_coords(goal_point)
+        rscreen_coords = self.to_screen_coords(estimation)
         rline_end_coords = (
-            rscreen_coords[0] + int(self.ppm * self.radius * 4 * np.cos(goal_point[2])),
-            rscreen_coords[1] - int(self.ppm * self.radius * 4 * np.sin(goal_point[2]))
+            rscreen_coords[0] + int(self.ppm * self.radius * 4 * np.cos(estimation[2])),
+            rscreen_coords[1] - int(self.ppm * self.radius * 4 * np.sin(estimation[2]))
         )
         pygame.draw.aaline(self.display, (0, 255, 0),
                            rscreen_coords, rline_end_coords, 10)
         pygame.draw.circle(self.display, (0, 255, 0),
-                           rscreen_coords, 5)
+                           rscreen_coords, 10)
 
         for ping in ping_coords:
             ping_pos = self.to_screen_coords(ping)
@@ -107,7 +107,7 @@ class Visualizer:
             # pygame.draw.rect(self.display, (255, 255, 255), rect, 1)
             pygame.draw.arc(self.display, (255, 255, 255), rect, start_angle, end_angle)
             pygame.draw.aaline(self.display, (255, 255, 255),
-                               rscreen_coords, self.to_screen_coords(ping), 10)
+                               screen_coords, self.to_screen_coords(ping), 10)
 
         for obs in obs_coords:
             pygame.draw.circle(self.display, (0, 0, 255),

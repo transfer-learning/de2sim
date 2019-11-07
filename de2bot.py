@@ -6,17 +6,15 @@ class State:
         self.pose = pose
         self.twist = twist
 
-
 class DE2Config:
-    def __init__(self, axle_length: float = 0.15, drag_coeff: float = 1.0):
+    def __init__(self, axle_length: float = 0.15):
         self.axle_length = axle_length
-        self.drag_coeff = drag_coeff
 
     def __str__(self):
-        return f"axle_length: {self.axle_length}\ndrag_coeff: {self.drag_coeff}"
+        return f"axle_length: {self.axle_length}"
 
     def __repr__(self):
-        return f"axle_length: {self.axle_length}\ndrag_coeff: {self.drag_coeff}"
+        return f"axle_length: {self.axle_length}"
 
 
 class DE2Bot:
@@ -28,15 +26,17 @@ class DE2Bot:
             [1.0, 1.0],
             [1 / self.config.axle_length, -1 / self.config.axle_length]
         ])
+        self.Ginv = np.linalg.inv(self.G)
 
     def apply(self, u: np.ndarray, dt: float):
-        drag = -self.config.drag_coeff * self.state.twist
-        f = 0.1 * self.G * u + drag
-
+        self.state.twist = self.G * u
         linear, angular = self.state.twist[0, 0], self.state.twist[1, 0]
         heading = self.state.pose[2, 0]
 
-        self.state.pose += dt * np.asmatrix([[linear * np.cos(heading),
-                                              linear * np.sin(heading),
-                                              angular]]).T
-        self.state.twist += dt * f
+        self.state.pose = self.state.pose + dt * np.asmatrix(
+            [[linear * np.cos(heading),
+              linear * np.sin(heading),
+              angular]]).T
+
+    def left_right(self):
+        return self.Ginv * self.state.twist
