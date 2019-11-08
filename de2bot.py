@@ -3,8 +3,8 @@ import numpy as np
 
 class State:
     def __init__(self, pose=np.asmatrix([0.0, 0.0, 0.0]).T, twist=np.asmatrix([0.0, 0.0]).T):
-        self.pose = pose
-        self.twist = twist
+        self.pose = pose.copy()
+        self.twist = twist.copy()
 
 class DE2Config:
     def __init__(self, axle_length: float = 0.15):
@@ -19,7 +19,7 @@ class DE2Config:
 
 class DE2Bot:
     def __init__(self, state: State = State(), config: DE2Config = DE2Config()):
-        self.state = state
+        self.state = State(state.pose)
         self.config = config
 
         self.G = np.asmatrix([

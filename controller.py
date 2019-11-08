@@ -34,9 +34,13 @@ class Controller:
         # Kalman Filter predict step
         self.localization.predict(encoders, delta_time)
 
+        # R = np.asmatrix([[1, 0],[0, 1]])
+        R = None
+
         if meas_dist is not None:
             # Update EKF
-            self.localization.update_beacon(meas_dist, self.last_sense)
+            # pass
+            R = self.localization.update_beacon(meas_dist, self.last_sense)
 
         self.prev_controls = controls
 
@@ -47,4 +51,4 @@ class Controller:
             self.last_sense = sensor
             self.next_sense = (self.next_sense + 1) % len(self.angles)
 
-        return (controls, sensor)
+        return controls, sensor, R

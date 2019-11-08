@@ -61,8 +61,19 @@ class Visualizer:
             r[2, 0] = -arate_max
         return r
 
-    def draw(self, robot_coords, estimation, ping_coords, obs_coords):
+    def draw(self, robot_coords, dr_coords, estimation, R, ping_coords, obs_coords):
+        """
+        Visualize things
+        :param robot_coords:
+        :param dr_coords:
+        :param estimation:
+        :param R: R matrix to draw ellipse
+        :param ping_coords:
+        :param obs_coords:
+        :return:
+        """
         screen_coords = self.to_screen_coords(robot_coords)
+
         heading = robot_coords[2]
         line_end_coords = (
             screen_coords[0] + int(self.ppm * self.radius * 4 * np.cos(heading)),
@@ -72,9 +83,10 @@ class Visualizer:
 
         self.display.fill((0, 0, 0))
         pygame.draw.circle(self.display, (255, 0, 0), screen_coords, radius)
-        pygame.draw.aaline(self.display, (255, 255, 255),
+        pygame.draw.aaline(self.display, (255, 0, 0),
                            screen_coords, line_end_coords, 10)
 
+        # Estimate
         rscreen_coords = self.to_screen_coords(estimation)
         rline_end_coords = (
             rscreen_coords[0] + int(self.ppm * self.radius * 4 * np.cos(estimation[2])),
@@ -84,6 +96,40 @@ class Visualizer:
                            rscreen_coords, rline_end_coords, 10)
         pygame.draw.circle(self.display, (0, 255, 0),
                            rscreen_coords, 10)
+
+        # Dead Reckoning
+        dr_screen_coords = self.to_screen_coords(dr_coords)
+        dr_line_end_coords = (
+            dr_screen_coords[0] + int(self.ppm * self.radius * 4 * np.cos(dr_coords[2])),
+            dr_screen_coords[1] - int(self.ppm * self.radius * 4 * np.sin(dr_coords[2]))
+        )
+        pygame.draw.aaline(self.display, (0, 0, 255),
+                           dr_screen_coords, dr_line_end_coords, 10)
+        pygame.draw.circle(self.display, (0, 0, 255),
+                           dr_screen_coords, 10)
+
+        # Covariance ellipse
+        # if R is not None:
+        #     lambda_, v = np.linalg.eig(R)
+        #     lambda_ = np.sqrt(lambda_)
+        #
+        #     F = np.asmatrix([[lambda_[0] * 2, lambda_[1] * 2]]).T
+        #
+        #     ang = np.arccos(v[0, 0])
+        #     F = np.asmatrix([[math.cos(ang), -math.sin(ang)],
+        #                      [math.sin(ang), math.cos(ang)]]) * F
+        #
+        #     ell_radius_x = np.abs(F[0, 0])
+        #     ell_radius_y = np.abs(F[1, 0])
+        #
+        #     print(f"x: {ell_radius_x}, y: {ell_radius_y}")
+        #
+        #     obs_0 = obs_coords[0]
+        #     bl = self.to_screen_coords((obs_0[0] - (ell_radius_x / 2), obs_0[1] + (ell_radius_y / 2)))
+        #
+        #     rect = pygame.rect.Rect(bl[0], bl[1], ell_radius_x * self.ppm, ell_radius_y * self.ppm)
+        #     pygame.draw.ellipse(self.display, (255, 0, 0), rect, 1)
+        #     pygame.draw.aaline(self.display, (255, 255, 255), self.to_screen_coords((obs_0[0])))
 
         for ping in ping_coords:
             ping_pos = self.to_screen_coords(ping)
