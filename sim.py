@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 import random
 import vis
+import sys
 
 from controller import Controller
 
@@ -18,7 +19,7 @@ def meas_prob(x, o, meas_angle):
 
     cos_th = ddir.T.dot(adir)
     cos = np.arccos(cos_th)
-    return np.exp(-15 * dist * cos[0, 0] * cos[0, 0])
+    return np.exp(-35 * dist * cos[0, 0] * cos[0, 0])
     # deg = 30
     # rad = np.radians(deg)
     # return 1 if np.abs(cos) < rad else 0
@@ -32,6 +33,16 @@ def sensor_model(x, obstacles, meas_angle):
         if random.random() < prob:
             return np.linalg.norm(obs - x[:2, 0])
     return None
+
+
+def wait():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                return
 
 
 def main():
@@ -54,8 +65,8 @@ def main():
     #     np.asmatrix([[-0.5, 0]]).T,
     # ]
     obstacles = [
-        np.asmatrix([[0, -0.5]]).T,
-        # np.asmatrix([[0.5, -0.5]]).T,
+        np.asmatrix([[-1.5, -0.5]]).T,
+        np.asmatrix([[1.5, -0.5]]).T,
     ]
 
     angles_deg = [-144, -90, -44, -12, 12, 44, 90, 144]
@@ -124,6 +135,7 @@ def main():
             hits,
             [(mat[0, 0], mat[1, 0]) for mat in obstacles])
 
+        # wait()
         clock.tick(framerate)
 
 

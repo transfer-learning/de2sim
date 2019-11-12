@@ -27,7 +27,7 @@ class Localizer:
         perpendicular to measurement, ie. in the x axis of the body frame
         :return: R matrix
         """
-        lambda_small = 1e-4
+        lambda_small = 5e-3
         lambda_big = 1e-2
 
         d = np.asmatrix([[lambda_big, 0],
@@ -49,10 +49,13 @@ class Localizer:
 
         # Find the position of the sensor reading.
         angle = self.sensor_angles[sensor]
+        global_angle = self.robot.state.pose[2, 0] + self.sensor_angles[sensor]
 
         print(f"Angle to beacon: {angle}, distance: {distance}")
 
         reading = distance * np.asmatrix([[np.cos(angle), np.sin(angle)]]).T
+        reading_global = self.robot.state.pose[:2, 0] + distance * np.asmatrix(
+            [[np.cos(global_angle), np.sin(global_angle)]]).T
 
         print(f"Sensor beacon position: {reading.T}")
 
@@ -60,7 +63,7 @@ class Localizer:
         beacon_index = None
         beacon_cost = None
         for i, beacon in enumerate(self.beacon_positions):
-            cost = np.linalg.norm(beacon - reading)
+            cost = np.linalg.norm(beacon - reading_global)
             if beacon_index is None or cost < beacon_cost:
                 beacon_cost = cost
                 beacon_index = i
@@ -89,8 +92,8 @@ class Localizer:
         print(f"sensor: {distance}, estimate: {actual_distance}")
 
         H = np.asmatrix([
-            [-math.cos(heading),  -math.sin(heading),   -math.sin(heading) * delta_x + math.cos(heading) * delta_y],
-            [math.sin(heading),   -math.cos(heading),   -math.cos(heading) * delta_x - math.sin(heading) * delta_y]
+            [-math.cos(heading), -math.sin(heading), -math.sin(heading) * delta_x + math.cos(heading) * delta_y],
+            [math.sin(heading), -math.cos(heading), -math.cos(heading) * delta_x - math.sin(heading) * delta_y]
         ])
 
         print(f"H:\n{H}")
